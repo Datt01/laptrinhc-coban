@@ -202,5 +202,143 @@ SELECT Ten,
 	RIGHT(Ten,LEN(Ten)- CHARINDEX(' ',Ten)) AS N'Tên' -- Ngọc Bảo
 FROM @TB_NAMES
 -- Tách tên đệm thành 1 cột.
+-- Về Giải bài tách tên cột.
 
+-- 2.3 Charindex Trả về vị trí được tìm thấy của một chuỗi trong chuỗi chỉ định, 
+-- ngoài ra có thể kiểm tra từ vị trí mong  muốn
+-- CHARINDEX ( string1, string2 ,[  start_location ] ) = 1 số nguyên
+SELECT CHARINDEX('POLY','FPT POLYTECHNIC')--= 5
+SELECT CHARINDEX('POLY','FPT POLYTECHNIC',6)-- = 0 Không tìm thấy
 
+-- 2.4 Substring Cắt chuỗi bắt đầu từ vị trí và độ dài muốn lấy 
+-- SUBSTRING(string,start,length)
+SELECT SUBSTRING('FPT POLYTECHNIC',5,LEN('FPT POLYTECHNIC'))
+SELECT SUBSTRING('FPT POLYTECHNIC',5,8)
+
+-- 2.5 Replace Hàm thay thế chuỗi theo giá trị cần thay thế và cần thay thế
+-- REPLACE(search,find,replace)
+SELECT REPLACE('0912-345-678','-','_')
+
+/* 2.6 
+REVERSE(string) Đảo ngược chuỗi truyền vào
+LOWER(string)	Biến tất cả chuỗi truyền vào thành chữ thường
+UPPER(string)	Biến tất cả chuỗi truyền vào thành chữ hoa
+SPACE(integer)	Đếm số lượng khoảng trắng trong chuỗi. 
+*/
+SELECT REVERSE('SQL')
+SELECT 'SQ' + '          ' + 'L'
+SELECT 'SQ' + SPACE(30) + 'L'
+
+-- 2.7 Các hàm ngày tháng năm
+SELECT GETDATE()
+SELECT CONVERT(DATE,GETDATE())
+SELECT CONVERT(TIME,GETDATE())
+
+SELECT YEAR(GETDATE()) AS YEAR,
+		MONTH(GETDATE()) AS MONTH,
+		DAY(GETDATE()) AS DAY
+
+-- DATENAME: truy cập tới các thành phần liên quan ngày tháng
+SELECT 
+	DATENAME(YEAR,GETDATE()) AS YEAR,
+	DATENAME(MONTH,GETDATE()) AS MONTH,
+	DATENAME(DAY,GETDATE()) AS DAY,
+	DATENAME(WEEK,GETDATE()) AS WEEK,
+	DATENAME(DAYOFYEAR,GETDATE()) AS DAYOFYEAR,
+	DATENAME(WEEKDAY,GETDATE()) AS WEEKDAY,
+-- Truyền vào ngày tháng năm sinh lấy thông tin về thời gian.
+DECLARE @NgaySinh DATE
+SET @NgaySinh = '1980-07-27'
+SELECT 
+	DATENAME(YEAR,@NgaySinh) AS YEAR,
+	DATENAME(MONTH,@NgaySinh) AS MONTH,
+	DATENAME(DAY,@NgaySinh) AS DAY,
+	DATENAME(WEEK,@NgaySinh) AS WEEK,
+	DATENAME(DAYOFYEAR,@NgaySinh) AS DAYOFYEAR,
+	DATENAME(WEEKDAY,@NgaySinh) AS WEEKDAY
+
+-- 2.8 Câu điều kiện IF ELSE trong SQL
+/* Lệnh if sẽ kiểm tra một biểu thức có đúng  hay không, nếu đúng thì thực thi nội dung bên trong của IF, nếu sai thì bỏ qua.
+IF BIỂU THỨC   
+BEGIN
+    { statement_block }
+END		  */
+IF 1=2
+	PRINT N'Đúng'
+ELSE
+	PRINT N'Sai'
+-- Viết 1 chương trình đánh giá qua môn COM2034
+DECLARE @DIEMTHI FLOAT
+SET @DIEMTHI = 4.9
+IF @DIEMTHI >= 5
+	BEGIN
+		PRINT N'Chúc mừng Bảo đã qua môn'
+	END
+ELSE
+	BEGIN
+		PRINT N'Chúc mừng Bảo đã đã mất 650k'
+	END
+-- Viết 1 chương trình đánh giá học lực 0 - 4 = Học lại, 5 - 6 = TB, 7 - 9 = Giỏi, Còn lại xuất sắc.
+DECLARE @DIEMTHI FLOAT
+SET @DIEMTHI = 8
+IF @DIEMTHI < 5
+	BEGIN
+		PRINT N'Chúc mừng Bảo đã học lại'
+	END
+ELSE IF (@DIEMTHI >=5 AND @DIEMTHI < 7)
+	BEGIN 
+		PRINT N'TB'
+	END
+ELSE IF (@DIEMTHI >=7 AND @DIEMTHI < 9)
+	BEGIN 
+		PRINT N'Giỏi'
+	END
+-- Xem có ELSE IF HAY KHÔNG?
+
+/*
+ 3.0 Hàm IIF () trả về một giá trị nếu một điều kiện là TRUE hoặc một giá trị khác nếu một điều kiện là FALSE.
+IIF(condition, value_if_true, value_if_false)
+*/
+SELECT IIF(5>9,N'Đúng',N'Sai')
+
+SELECT Ma,Ten,
+	IIF(IdCH =1,N'Cửa Hàng 1',IIF(IdCH =2,N'Cửa Hàng 2',N'Không xác định'))
+FROM NhanVien
+/*
+3.1 Câu lệnh CASE đi qua các điều kiện và trả về một giá trị khi điều kiện đầu tiên được đáp ứng (như câu lệnh IF-THEN-ELSE). 
+Vì vậy, một khi một điều kiện là đúng, nó sẽ ngừng đọc và trả về kết quả. 
+Nếu không có điều kiện nào đúng, nó sẽ trả về giá trị trong mệnh đề ELSE.
+Nếu không có phần ELSE và không có điều kiện nào đúng, nó sẽ trả về NULL.
+CASE
+    WHEN condition1 THEN result1
+    WHEN condition2 THEN result2
+    WHEN conditionN THEN resultN
+    ELSE result
+END;
+*/
+SELECT Ma,
+	Ten = (CASE GioiTinh
+	WHEN 'Nam' THEN 'Anh. ' + Ten
+	WHEN N'Nữ' THEN N'Chị. ' + Ten
+	ELSE N'Không xác định'
+	END),
+	GioiTinh
+FROM NhanVien
+
+SELECT Ma,
+	Ten = (CASE 
+	WHEN GioiTinh = 'Nam' THEN 'Anh. ' + Ten
+	WHEN GioiTinh = N'Nữ' THEN N'Chị. ' + Ten
+	ELSE N'Không xác định'
+	END),
+	GioiTinh
+FROM NhanVien
+/*Vòng lặp WHILE (WHILE LOOP) được sử dụng nếu bạn muốn 
+chạy lặp đi lặp lại một đoạn mã khi điều kiện cho trước trả về giá trị là TRUE.*/
+DECLARE @DEM INT = 0
+WHILE @DEM < 5
+BEGIN
+	PRINT N'Lần thứ: ' + CONVERT(VARCHAR,@DEM)
+	PRINT N'Muốn học môn COM2034 thì phải code nhiều'
+	SET @DEM = @DEM + 1
+END
