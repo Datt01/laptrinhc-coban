@@ -342,3 +342,129 @@ BEGIN
 	PRINT N'Muốn học môn COM2034 thì phải code nhiều'
 	SET @DEM = @DEM + 1
 END
+/*Lệnh Break (Ngắt vòng lặp)*/
+/* Lệnh Continue: Thực hiện bước lặp tiếp theo bỏ qua các lệnh trong */
+DECLARE @DEM INT = 0
+WHILE @DEM < 5
+BEGIN
+	IF @DEM = 3
+	BEGIN
+	SET	@DEM +=1
+		CONTINUE
+	END
+	PRINT N'Lần thứ: ' + CONVERT(VARCHAR,@DEM)
+	PRINT N'Muốn học môn COM2034 thì phải code nhiều'
+	SET @DEM = @DEM + 1
+END
+
+/* 3.2 Try...Catch 
+SQLServer Transact-SQL cung cấp cơ chế kiểm soát lỗi bằng TRY … CATCH
+như trong các ngôn ngữ lập trình phổ dụng hiện nay (Java, C, PHP, C#).
+Một số hàm ERROR thường dùng
+_
+ERROR_NUMBER() : Trả về mã số của lỗi dưới dạng số
+ERROR_MESSAGE() Trả lại thông báo lỗi dưới hình thức văn bản 
+ERROR_SEVERITY() Trả lại mức độ nghiêm trọng của lỗi kiểu int
+ERROR_STATE() Trả lại trạng thái của lỗi dưới dạng số
+ERROR_LINE() : Trả lại vị trí dòng lệnh đã phát sinh ra lỗi
+ERROR_PROCEDURE() Trả về tên thủ tục/Trigger gây ra lỗi
+*/
+BEGIN TRY
+	SELECT '1a' + '1'
+END TRY
+BEGIN CATCH
+	SELECT
+	ERROR_NUMBER() AS N'Trả về mã số của lỗi dưới dạng số',
+	ERROR_MESSAGE() AS N'Trả lại thông báo lỗi dưới hình thức văn bản '
+END CATCH
+
+-- Ví dụ 2: RAISERROR - Nội dung ERROR, Giúp khi PRINT sẽ mất thời gian hơn.
+BEGIN TRY
+	INSERT INTO MauSac VALUES('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa','a')
+END TRY
+BEGIN CATCH
+	DECLARE @erERROR_SEVERITY INT, @erERROR_MESSAGE VARCHAR(MAX),@erERROR_STATE INT
+	SELECT 
+		@erERROR_SEVERITY = ERROR_SEVERITY(),
+		@erERROR_MESSAGE = ERROR_MESSAGE(),
+		@erERROR_STATE = ERROR_STATE()
+	RAISERROR(@erERROR_MESSAGE,@erERROR_SEVERITY,@erERROR_STATE)
+END CATCH
+-- 3.4 Ý nghĩa của Replicate
+DECLARE @ten1234 NVARCHAR(50)
+SET @ten1234 = REPLICATE(N'Á',5)--Lặp lại số lần với String truyền vào
+PRINT @ten1234
+
+/* TỔNG KẾT STORE PROCEDURE :
+ -- Là lưu trữ một tập hợp các câu lệnh đi kèm trong CSDL cho phép tái sử dụng khi cần
+ -- Hỗ trợ các ứng dụng tương tác nhanh và chính xác
+ -- Cho phép thực thi nhanh hơn cách viết từng câu lệnh SQL
+ -- Stored procedure có thể làm giảm bớt vấn đề kẹt đường truyền mạng, dữ liệu được gởi theo gói.
+ -- Stored procedure có thể sử dụng trong vấn đề bảo mật, phân quyền
+ -- Có 2 loại Store Procedure chính: System stored	procedures và User stored procedures   
+ 
+ -- Cấu trúc của Store Procedure bao hồm:
+	➢Inputs: nhận các tham số đầu vào khi cần
+	➢Execution: kết hợp giữa các yêu cầu nghiệp vụ với các lệnh
+	lập trình như IF..ELSE, WHILE...
+	➢Outputs: trả ra các đơn giá trị (số, chuỗi…) hoặc một tập kết quả.
+ 
+ --Cú pháp:
+ CREATE hoặc ALTER(Để cập nhật nếu đã tồn tại tên SP) PROC <Tên STORE PROCEDURE> <Tham số truyền vào nếu có>
+ AS
+ BEGIN
+  <BODY CODE>
+ END
+ ĐỂ GỌI SP dùng EXEC hoặc EXECUTE
+SPs chia làm 2 loại:
+System stored procedures: Thủ tục mà những người sử dụng chỉ có quyền thực hiện, không được phép thay đổi.	
+User stored procedures: Thủ tục do người sử dụng tạo và thực hiện.
+ -- SYSTEM STORED PROCEDURES
+ Là những stored procedure chứa trong Master Database, thường bắt đầu bằng tiếp đầu ngữ	 sp_
+ Chủ yếu dùng trong việc quản lý cơ sở dữ liệu(administration) và bảo mật (security).
+❑Ví dụ: sp_helptext <tên của đối tượng> : để lấy định nghĩa của đối tượng (thông số tên đối
+tượng truyền vào) trong Database
+ */
+
+ --  Ví dụ cơ bản:
+ GO
+ CREATE PROCEDURE SP_DSNhanVienNam
+ AS
+ SELECT * FROM NhanVien WHERE GioiTinh = 'NAM'
+
+ GO
+ CREATE PROC SP_DSNhanVienNuCH1
+ AS
+ SELECT * FROM NhanVien WHERE GioiTinh = N'NỮ' AND IdCH = (SELECT ID FROM CuaHang WHERE Ma = 'CH1')
+
+ --  Thực thi Store PROC chỉ cần biết tên Store
+ EXECUTE SP_DSNhanVienNam
+ EXEC SP_DSNhanVienNuCH1
+
+ -- TRIỂN KHAI STORE PROC NÂNG CAO - GIÚP QUA MÔN, HỌC JAVA3, DỰN ÁN 1 hoặc 2
+
+ GO
+ CREATE PROC SP_CRUD_TBNhaSX(@Id INT,
+							@Ma VARCHAR(20),
+							@Ten NVARCHAR(30),
+							@SqlType VARCHAR(10))
+ AS
+ BEGIN
+	IF @SqlType = 'SELECT'
+	BEGIN
+		SELECT * FROM NSX
+	END
+	IF @SqlType = 'INSERT'
+	BEGIN
+		INSERT INTO NSX VALUES(@Ma,@Ten)
+	END
+	IF @SqlType = 'DELETE'
+	BEGIN
+		DELETE NSX WHERE Id = @Id
+	END
+	IF @SqlType = 'UPDATE'
+	BEGIN
+		UPDATE NSX SET Ma = @Ma,Ten = @Ten
+		WHERE Id = @Id
+	END
+ END
