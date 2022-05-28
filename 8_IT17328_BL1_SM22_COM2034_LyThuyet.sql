@@ -468,3 +468,9 @@ tượng truyền vào) trong Database
 		WHERE Id = @Id
 	END
  END
+
+ EXEC SP_CRUD_TBNhaSX @Id = 0,@Ma = '',@Ten = '',@SqlType = 'SELECT'
+ EXEC SP_CRUD_TBNhaSX @Id = 0,@Ma = 'Dungna',@Ten = 'D',@SqlType = 'INSERT'
+
+ -- Bài Tập Viết STORE PROC CRUD BẢNG NHÂN VIÊN Không truhyền khóa phụ mà là truyền mã MÃ CỬA HÀNG, MÃ CHỨC VỤ. CÒN CÁC THAM SỐ HỢP LÝ.
+
