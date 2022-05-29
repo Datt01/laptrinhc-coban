@@ -428,7 +428,7 @@ tượng truyền vào) trong Database
 
  --  Ví dụ cơ bản:
  GO
- CREATE PROCEDURE SP_DSNhanVienNam
+ CREATE PROCEDURE SP_DSNhanVienNam -- CREATE, DROP, ALTER
  AS
  SELECT * FROM NhanVien WHERE GioiTinh = 'NAM'
 
@@ -474,3 +474,91 @@ tượng truyền vào) trong Database
 
  -- Bài Tập Viết STORE PROC CRUD BẢNG NHÂN VIÊN Không truhyền khóa phụ mà là truyền mã MÃ CỬA HÀNG, MÃ CHỨC VỤ. CÒN CÁC THAM SỐ HỢP LÝ.
 
+ /* TRIGGER DML 
+❑Các trigger DML được thực thi khi sự kiện DML	xảy ra trong các bảng hoặc VIEW.
+❑Trigger DML này bao gồm các câu lệnh INSERT, UPDATE và DELETE.
+❑Các trigger DML gồm ba loại chính:Trigger	INSERT, Trigger UPDATE, Trigger DELETE
+Sinh ra Các bảng Inserted và Deleted
+❖Các trigger DML sử dụng hai loại bảng đặc biệt để sửa đổi dữ liệu trong cơ sở dữ liệu.
+❖Các bảng tạm thời lưu trữ dữ liệu ban đầu cũng như	 dữ liệu đã sửa đổi. Những bảng này gồm Inserted và	Deleted.
+❖Bảng Inserted:chứa bản sao các bản ghi được sửa đổi với hoạt động INSERT và UPDATE trên bảng trigger.
+Hoạt động INSERT và UPDATE sẽ tiến hành chèn các bản ghi mới vào bảng Inserted và bảng trigger.
+❖Bảng Deleted:chứa bản sao của các bản ghi được sửa đổi với hoạt động DELETE và UPDATE trên bảng trigger
+*/
+/*
+ Trigger INSERT
+❖Trigger INSERT được thực thi khi một bản ghi mới được chèn vào bảng
+❖Trigger INSERT đảm bảo rằng giá trị đang được nhập	phù hợp với các ràng buộc được định nghĩa trên bảng đó.
+❖Bảng Inserted và Deleted về khía cạnh vật lý chúng không tồn tại trong cơ sở dữ liệu
+❖Trigger INSERT được tạo ra bằng cách sử dụng từ  khóa INSERT trong câu lệnh CREATE TRIGGER và ALTER TRIGGER.
+ 
+CREATE TRIGGER Tên_trigger ON Tên_Bảng
+FOR {DELETE, INSERT, UPDATE}
+AS
+BEGIN
+	Câu lệnh T-SQL
+END 
+❖tên_trigger: chỉ ra tên của trigger do người dùng tự đặt
+❖Tên bảng: chỉ ra bảng mà trên đó trigger DML được tạo ra
+(bảng trigger).
+❖FOR : hoạt động thao tác dữ liệu.
+❖Câu lệnh sql: chỉ ra các câu lệnh SQL được thực thi trong
+trigger DML
+ */
+ -- Ví dụ 1: 
+ GO
+ ALTER TRIGGER TG_Insert_CheckGioiTinh ON NhanVien
+ FOR INSERT
+ AS
+ BEGIN
+	IF((SELECT GioiTinh FROM inserted) IS NULL) OR (LEN((SELECT GioiTinh FROM inserted)) < 2)
+	BEGIN
+		PRINT N'Không thể INSERT Giới Tính Null Hoặc độ dài bé hơn 1 ký tự'
+		ROLLBACK TRANSACTION
+	END
+ END
+
+INSERT INTO NhanVien
+VALUES ('NV1992911a',N'Dũng',N'Anh',N'Nguyễn',NULL,'1991-05-03',N'152 Hàng Buồm Hà Nội','0988147200',1,17,null,1)
+
+/*
+ Trigger UPDATE
+❖Trigger UPDATE sao chép bản ghi gốc vào bảng  Deleted và bản ghi mới vào bảng Inserted
+❖Nếu các giá trị mới là hợp lệ thì bản ghi từ bảng Inserted sẽ được sao chép vào bảng dữ liệu
+❖Trigger UPDATE được tạo ra bằng cách sử dụng từ khóa UPDATE trong câu lệnh CREATE TRIGGER và ALTER TRIGGER.
+❖Cú pháp tương tự trigger insert
+ 
+CREATE TRIGGER Tên_trigger ON Tên_Bảng
+FOR {DELETE, INSERT, UPDATE}
+AS
+BEGIN
+	Câu lệnh TSQL
+END  
+ */
+
+ GO
+ CREATE TRIGGER TG_UPDATE_CheckGioiTinh ON NhanVien
+ FOR UPDATE
+ AS
+ BEGIN
+	IF((SELECT GioiTinh FROM inserted) IS NULL) OR (LEN((SELECT GioiTinh FROM inserted)) < 2)
+	BEGIN
+		PRINT N'Không thể UPDATE Giới Tính Null Hoặc độ dài bé hơn 1 ký tự'
+		ROLLBACK TRANSACTION
+	END
+ END
+
+ UPDATE NhanVien SET GioiTinh = NULL WHERE Ma = 'NV1'
+
+ --TRIGGER DELETE
+ GO
+ CREATE TRIGGER TG_DELETE_HOADON ON HoaDon
+ INSTEAD OF DELETE
+ AS
+ BEGIN
+	DELETE FROM HoaDonChiTiet WHERE IdHoaDon IN(SELECT Id FROM deleted)
+	DELETE FROM HoaDon WHERE Id IN(SELECT Id FROM deleted)
+ END
+
+
+ DELETE FROM HoaDon WHERE Id = 1
